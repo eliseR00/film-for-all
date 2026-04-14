@@ -1,33 +1,136 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Film-for-All
+
+A modern Next.js web application that discovers films using the Film API and generates AI-powered insights using OpenAI.
+
+## Features
+
+- 🎬 Search for films using The Movie Database (TMDB) API
+- 🤖 AI-powered movie overviews generated with OpenAI
+- 🎨 Beautiful, responsive UI built with Tailwind CSS
+- ⚡ Server-side rendered with Next.js 16+
+- 🚀 Ready for Vercel deployment
+
+## Tech Stack
+
+- **Framework:** Next.js 16+ with App Router
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **External APIs:** TMDB (Film API) + OpenAI GPT
+- **Deployment:** Vercel
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18+ and npm
+- TMDB API Key ([Get one here](https://www.themoviedb.org/settings/api))
+- OpenAI API Key ([Get one here](https://platform.openai.com/api-keys))
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/yourusername/film-for-all.git
+cd film-for-all
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Create `.env.local` with your API keys:
+```bash
+cp .env.local.example .env.local
+# Then edit .env.local and add your API keys
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Development
 
-## Learn More
+Run the development server:
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Production Build
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run build
+npm run start
+```
+
+### Linting
+
+```bash
+npm run lint
+```
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── api/
+│   │   └── films/
+│   │       ├── search/       # Search films endpoint
+│   │       └── overview/     # Generate AI overview endpoint
+│   ├── films/
+│   │   └── [id]/            # Film detail page with AI overview
+│   ├── layout.tsx           # Root layout
+│   ├── page.tsx             # Home page
+│   └── globals.css          # Global styles
+├── components/
+│   ├── FilmCard.tsx         # Film card component
+│   ├── FilmSearch.tsx       # Search interface
+│   └── ...                  # Other components
+├── lib/
+│   ├── filmApi.ts           # TMDB API client
+│   ├── aiOverview.ts        # OpenAI integration
+│   └── ...                  # Utility functions
+└── types/
+    └── film.ts              # TypeScript type definitions
+```
+
+## API Routes
+
+### Search Films
+- **Endpoint:** `GET /api/films/search`
+- **Query Parameters:** `query` (required)
+- **Response:** Array of film objects
+
+### Generate Overview
+- **Endpoint:** `POST /api/films/overview`
+- **Body:** `{ filmId: string }`
+- **Response:** Film overview with AI-generated text
+
+## Deployment
+
+### Deploy to Vercel
+
+1. Push your code to GitHub
+2. Go to [Vercel](https://vercel.com)
+3. Import the repository
+4. Add environment variables:
+   - `NEXT_PUBLIC_FILM_API_KEY`
+   - `OPENAI_API_KEY`
+5. Deploy!
+
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `NEXT_PUBLIC_FILM_API_KEY` | Yes | TMDB API key for film data |
+| `OPENAI_API_KEY` | Yes | OpenAI API key for AI overviews |
+
+## License
+
+MIT License - see LICENSE file for details
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Deploy on Vercel
 
