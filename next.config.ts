@@ -7,6 +7,18 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "static.bhphoto.com",
       },
+      {
+        protocol: "https",
+        hostname: "user-images.githubusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "assets.bigcartel.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.vercel.app",
+      },
     ],
   },
 };
