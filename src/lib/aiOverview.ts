@@ -9,7 +9,7 @@ export const aiOverview = {
     });
 
     try {
-      const prompt = `Generate a compelling and concise 2-3 sentence overview for the following film:
+      const prompt = `Generate a compelling and concise 2-3 sentence overview for the following film. Include a breakdown of the specifications included in the api:
 
 Title: ${film.title}
 Year: ${film.year}

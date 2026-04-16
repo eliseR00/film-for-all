@@ -8,7 +8,7 @@ export default function Home() {
           Discover Amazing Films
         </h2>
         <p className="text-lg text-gray-600">
-          Search for films and get AI-powered insights and overviews
+          Search for films and get AI-powered insights and overviews. In the future, you will be able to favorite films and make community posts!
         </p>
       </div>
 
