@@ -34,10 +34,11 @@ export async function POST(request: NextRequest) {
     // });
 
         return NextResponse.json({
-      filmId: '1',
-      title: "filmDetails.title",
+      filmId,
+      title: filmDetails.title,
       overview: "lalalala",
       generatedAt: "new Date().toISOString()",
+
     });
   } catch (error) {
     console.error('Overview API error:', error);
