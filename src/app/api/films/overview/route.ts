@@ -26,20 +26,20 @@ export async function POST(request: NextRequest) {
 // console.log('Film details retrieved:', filmDetails);
     const overview = await aiOverview.generateOverview(filmDetails);
 
-    // return NextResponse.json({
-    //   filmId,
-    //   title: filmDetails.title,
-    //   overview,
-    //   generatedAt: new Date().toISOString(),
-    // });
-
-        return NextResponse.json({
+    return NextResponse.json({
       filmId,
       title: filmDetails.title,
-      overview: "lalalala",
-      generatedAt: "new Date().toISOString()",
-
+      overview,
+      generatedAt: new Date().toISOString(),
     });
+
+    //     return NextResponse.json({
+    //   filmId,
+    //   title: filmDetails.title,
+    //   overview: "lalalala",
+    //   generatedAt: "new Date().toISOString()",
+
+    // });
   } catch (error) {
     console.error('Overview API error:', error);
     return NextResponse.json(
