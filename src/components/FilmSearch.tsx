@@ -34,7 +34,8 @@ export default function FilmSearch() {
   useEffect(() => {
     const loadFilms = async () => {
       setLoading(true);
-      const films = await filmApi.getAllFilms();
+      const response = await fetch('/api/films');
+      const films = await response.json();
       setAllFilms(films);
       setFilteredFilms(films);
       setLoading(false);
@@ -175,6 +176,8 @@ export default function FilmSearch() {
             <option value="Color">Color</option>
           </select>
         </div>
+
+        
 
         {/* Reset Button */}
         <div className="flex items-end">
