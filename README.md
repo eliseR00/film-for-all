@@ -6,6 +6,8 @@ A modern Next.js web application that discovers films using the Film API and gen
 
 - 🎬 Search for films using The Movie Database (TMDB) API
 - 🤖 AI-powered movie overviews generated with OpenAI
+- 🔐 User authentication with Google OAuth
+- 👤 User profile management
 - 🎨 Beautiful, responsive UI built with Tailwind CSS
 - ⚡ Server-side rendered with Next.js 16+
 - 🚀 Ready for Vercel deployment
@@ -25,6 +27,7 @@ A modern Next.js web application that discovers films using the Film API and gen
 - Node.js 18+ and npm
 - TMDB API Key ([Get one here](https://www.themoviedb.org/settings/api))
 - OpenAI API Key ([Get one here](https://platform.openai.com/api-keys))
+- Google OAuth Credentials ([Set up here](https://console.developers.google.com/))
 
 ### Installation
 
@@ -44,6 +47,26 @@ npm install
 cp .env.local.example .env.local
 # Then edit .env.local and add your API keys
 ```
+
+**Required Environment Variables:**
+- `OPENAI_API_KEY`: Your OpenAI API key
+- `GOOGLE_CLIENT_ID`: Google OAuth client ID
+- `GOOGLE_CLIENT_SECRET`: Google OAuth client secret
+- `NEXTAUTH_SECRET`: Random secret for NextAuth (generate with `openssl rand -base64 32`)
+- `NEXTAUTH_URL`: Your app URL (http://localhost:3000 for development)
+
+### Google OAuth Setup
+
+1. Go to [Google Cloud Console](https://console.developers.google.com/)
+2. Create a new project or select an existing one
+3. Enable the Google+ API
+4. Go to "Credentials" and create an OAuth 2.0 Client ID
+5. Set authorized redirect URIs to:
+   - `http://localhost:3000/api/auth/callback/google` (development)
+   - `https://yourdomain.com/api/auth/callback/google` (production)
+6. Copy the Client ID and Client Secret to your `.env.local`
+
+**Note:** The app is pre-configured to allow Google profile images from `lh3.googleusercontent.com`, `lh4.googleusercontent.com`, `lh5.googleusercontent.com`, and `lh6.googleusercontent.com` domains.
 
 ### Development
 
@@ -73,24 +96,33 @@ npm run lint
 src/
 ├── app/
 │   ├── api/
+│   │   ├── auth/[...nextauth]/  # NextAuth API route
 │   │   └── films/
-│   │       ├── search/       # Search films endpoint
-│   │       └── overview/     # Generate AI overview endpoint
+│   │       ├── search/          # Search films endpoint
+│   │       └── overview/        # Generate AI overview endpoint
+│   ├── auth/
+│   │   ├── signin/             # Sign in page
+│   │   └── signup/             # Sign up page
+│   ├── user/
+│   │   └── profile/            # User profile page
 │   ├── films/
-│   │   └── [id]/            # Film detail page with AI overview
-│   ├── layout.tsx           # Root layout
-│   ├── page.tsx             # Home page
-│   └── globals.css          # Global styles
+│   │   └── [id]/               # Film detail page with AI overview
+│   ├── layout.tsx              # Root layout
+│   ├── page.tsx                # Home page
+│   └── globals.css             # Global styles
 ├── components/
-│   ├── FilmCard.tsx         # Film card component
-│   ├── FilmSearch.tsx       # Search interface
-│   └── ...                  # Other components
+│   ├── AuthForm.jsx            # Authentication form component
+│   ├── FilmCard.tsx            # Film card component
+│   ├── FilmSearch.tsx          # Search interface
+│   ├── Navigation.jsx          # Dynamic navigation component
+│   ├── SessionProvider.jsx     # NextAuth session provider
+│   └── ...                     # Other components
 ├── lib/
-│   ├── filmApi.ts           # TMDB API client
-│   ├── aiOverview.ts        # OpenAI integration
-│   └── ...                  # Utility functions
+│   ├── filmApi.ts              # TMDB API client
+│   ├── aiOverview.ts           # OpenAI integration
+│   └── ...                     # Utility functions
 └── types/
-    └── film.ts              # TypeScript type definitions
+    └── film.ts                 # TypeScript type definitions
 ```
 
 ## API Routes

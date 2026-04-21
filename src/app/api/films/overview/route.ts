@@ -33,13 +33,6 @@ export async function POST(request: NextRequest) {
       generatedAt: new Date().toISOString(),
     });
 
-    //     return NextResponse.json({
-    //   filmId,
-    //   title: filmDetails.title,
-    //   overview: "lalalala",
-    //   generatedAt: "new Date().toISOString()",
-
-    // });
   } catch (error) {
     console.error('Overview API error:', error);
     return NextResponse.json(
