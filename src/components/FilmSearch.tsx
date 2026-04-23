@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Film } from '@/types/film';
 import FilmCard from './FilmCard';
-import { filmApi } from '@/lib/filmApi';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface FilmWithFilters extends Film {
   iso?: number;
@@ -15,8 +15,8 @@ interface FilmWithFilters extends Film {
 
 export default function FilmSearch() {
   const [allFilms, setAllFilms] = useState<FilmWithFilters[]>([]);
-  const [filteredFilms, setFilteredFilms] = useState<FilmWithFilters[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toggleFavorite, isFavorited } = useFavorites();
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,7 +28,6 @@ export default function FilmSearch() {
   // Get unique values for filters
   const brands = Array.from(new Set(allFilms.map((f) => f.brand))).sort();
   const isos = Array.from(new Set(allFilms.map((f) => f.iso))).sort((a, b) => a! - b!);
-  const colors = ['B&W', 'Color'];
 
   // Load all films on mount
   useEffect(() => {
@@ -37,14 +36,13 @@ export default function FilmSearch() {
       const response = await fetch('/api/films');
       const films = await response.json();
       setAllFilms(films);
-      setFilteredFilms(films);
       setLoading(false);
     };
     loadFilms();
   }, []);
 
   // Apply filters
-  useEffect(() => {
+  const filteredFilms = useMemo(() => {
     let results = allFilms;
 
     // Search query filter
@@ -81,8 +79,8 @@ export default function FilmSearch() {
       results = results.filter((film) => film.isColor === isColor);
     }
 
-    setFilteredFilms(results);
-  }, [searchQuery, selectedBrand, selectedISO, selectedFormat, selectedColor, allFilms]);
+    return results;
+  }, [allFilms, searchQuery, selectedBrand, selectedISO, selectedFormat, selectedColor]);
 
   const resetFilters = () => {
     setSearchQuery('');
@@ -204,7 +202,12 @@ export default function FilmSearch() {
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredFilms.map((film) => (
-              <FilmCard key={film.id} film={film} />
+              <FilmCard
+                key={film.id}
+                film={film}
+                onFavorite={toggleFavorite}
+                isFavorited={isFavorited(film.id)}
+              />
             ))}
           </div>
         </>

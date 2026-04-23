@@ -26,6 +26,7 @@ export const filmApi = {
       return allFilms.map((film) => ({
         id: film._id,
         title: `${film.brand.toUpperCase()} ${film.name}`,
+        name: film.name,
         year: new Date(film.dateAdded).getFullYear(),
         director: film.brand,
         description: film.description,
@@ -38,7 +39,7 @@ export const filmApi = {
         format120: film.formatOneTwenty,
         isColor: film.color,
         brand: film.brand,
-      })) as any;
+      }));
     } catch (error) {
       console.error('Error fetching all films:', error);
       return [];
@@ -61,6 +62,7 @@ export const filmApi = {
       return filtered.map((film) => ({
         id: film._id,
         title: `${film.brand.toUpperCase()} ${film.name}`,
+        name: film.name,
         year: new Date(film.dateAdded).getFullYear(),
         director: film.brand,
         description: film.description,
@@ -71,7 +73,7 @@ export const filmApi = {
         format120: film.formatOneTwenty,
         isColor: film.color,
         brand: film.brand,
-      })) as any;
+      }));
     } catch (error) {
       console.error('Error searching films:', error);
       return [];
@@ -92,6 +94,7 @@ export const filmApi = {
       return {
         id: film._id,
         title: `${film.brand.toUpperCase()} ${film.name}`,
+        name: film.name,
         year: new Date(film.dateAdded).getFullYear(),
         director: film.brand,
         description: film.description,
@@ -103,7 +106,7 @@ export const filmApi = {
         format120: film.formatOneTwenty,
         isColor: film.color,
         brand: film.brand,
-      } as any;
+      };
     } catch (error) {
       console.error('Error fetching film details:', error);
       return null;

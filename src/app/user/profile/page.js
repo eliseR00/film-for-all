@@ -2,18 +2,70 @@
 
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import FilmCard from '@/components/FilmCard'
+import { useFavorites } from '@/hooks/useFavorites'
 
 export default function Profile() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { favorites, toggleFavorite, isFavorited } = useFavorites()
+  const [favoriteFilms, setFavoriteFilms] = useState([])
+  const [loadingFavorites, setLoadingFavorites] = useState(true)
+  const [userPosts, setUserPosts] = useState([])
+  const [loadingPosts, setLoadingPosts] = useState(true)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/signin')
     }
   }, [status, router])
+
+  useEffect(() => {
+    const fetchFavoriteFilms = async () => {
+      if (favorites.length > 0) {
+        setLoadingFavorites(true)
+        try {
+          const response = await fetch('/api/films')
+          const allFilms = await response.json()
+          const favFilms = allFilms.filter(film => favorites.includes(film.id))
+          setFavoriteFilms(favFilms)
+        } catch (error) {
+          console.error('Error fetching favorite films:', error)
+        } finally {
+          setLoadingFavorites(false)
+        }
+      } else {
+        setFavoriteFilms([])
+        setLoadingFavorites(false)
+      }
+    }
+    fetchFavoriteFilms()
+  }, [favorites])
+
+  useEffect(() => {
+    const fetchUserPosts = async () => {
+      if (session?.user?.id) {
+        setLoadingPosts(true)
+        try {
+          const response = await fetch(`/api/forum?userId=${session.user.id}`)
+          if (response.ok) {
+            const posts = await response.json()
+            setUserPosts(posts)
+          }
+        } catch (error) {
+          console.error('Error fetching user posts:', error)
+        } finally {
+          setLoadingPosts(false)
+        }
+      } else {
+        setUserPosts([])
+        setLoadingPosts(false)
+      }
+    }
+    fetchUserPosts()
+  }, [session?.user?.id])
 
   if (status === 'loading') {
     return (
@@ -97,6 +149,61 @@ export default function Profile() {
                     </span>
                   </div>
                 </div>
+              </div>
+
+              <div className="border-t border-gray-200 pt-4">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">My Favorite Films</h3>
+                {loadingFavorites ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  </div>
+                ) : favoriteFilms.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {favoriteFilms.map(film => (
+                      <FilmCard
+                        key={film.id}
+                        film={film}
+                        onFavorite={toggleFavorite}
+                        isFavorited={isFavorited(film.id)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-600 py-4">No favorite films yet. Discover some films and add them to your favorites!</p>
+                )}
+              </div>
+
+              <div className="border-t border-gray-200 pt-4">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">My Posts</h3>
+                {loadingPosts ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  </div>
+                ) : userPosts.length > 0 ? (
+                  <div className="space-y-4">
+                    {userPosts.map((post) => (
+                      <article key={post.id} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                          <div className="flex-1">
+                            <h4 className="text-lg font-semibold text-gray-900">{post.title}</h4>
+                            <p className="mt-1 text-sm text-gray-600 line-clamp-2">{post.content}</p>
+                          </div>
+                          <div className="flex flex-col items-end gap-1 text-xs text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                              </svg>
+                              {post.upvotes}
+                            </div>
+                            <p>{new Date(post.createdAt).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-600 py-4">No posts yet. Share your thoughts in the forum!</p>
+                )}
               </div>
 
               <div className="border-t border-gray-200 pt-4">

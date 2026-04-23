@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
 interface FilmOverviewResponse {
@@ -14,7 +13,6 @@ interface FilmOverviewResponse {
 
 export default function FilmDetail() {
   const params = useParams();
-  const router = useRouter();
   const filmId = params.id as string;
 
   const [overview, setOverview] = useState<FilmOverviewResponse | null>(null);
