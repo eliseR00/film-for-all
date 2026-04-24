@@ -15,6 +15,11 @@ export default function Profile() {
   const [loadingFavorites, setLoadingFavorites] = useState(true)
   const [userPosts, setUserPosts] = useState([])
   const [loadingPosts, setLoadingPosts] = useState(true)
+  const [lightbox, setLightbox] = useState({
+    isOpen: false,
+    postId: '',
+    currentIndex: 0
+  })
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -66,6 +71,61 @@ export default function Profile() {
     }
     fetchUserPosts()
   }, [session?.user?.id])
+
+  const openLightbox = (postId, imageIndex) => {
+    setLightbox({ isOpen: true, postId, currentIndex: imageIndex })
+  }
+
+  const closeLightbox = () => {
+    setLightbox({ isOpen: false, postId: '', currentIndex: 0 })
+  }
+
+  const navigateLightbox = (direction) => {
+    const post = userPosts.find(p => p.id === lightbox.postId)
+    if (!post || !post.images) return
+
+    const totalImages = post.images.length
+    let newIndex = lightbox.currentIndex
+
+    if (direction === 'prev') {
+      newIndex = newIndex > 0 ? newIndex - 1 : totalImages - 1
+    } else {
+      newIndex = newIndex < totalImages - 1 ? newIndex + 1 : 0
+    }
+
+    setLightbox(prev => ({ ...prev, currentIndex: newIndex }))
+  }
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (!lightbox.isOpen) return
+
+      switch (event.key) {
+        case 'ArrowLeft':
+          event.preventDefault()
+          navigateLightbox('prev')
+          break
+        case 'ArrowRight':
+          event.preventDefault()
+          navigateLightbox('next')
+          break
+        case 'Escape':
+          event.preventDefault()
+          closeLightbox()
+          break
+      }
+    }
+
+    if (lightbox.isOpen) {
+      document.addEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = 'hidden'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = 'unset'
+    }
+  }, [lightbox.isOpen, lightbox.currentIndex])
 
   if (status === 'loading') {
     return (
@@ -185,8 +245,35 @@ export default function Profile() {
                       <article key={post.id} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                           <div className="flex-1">
-                            <h4 className="text-lg font-semibold text-gray-900">{post.title}</h4>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="text-lg font-semibold text-gray-900">{post.title}</h4>
+                              <span className={`text-xs px-2 py-1 rounded-full ${
+                                post.visibility === 'public'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {post.visibility === 'public' ? 'Public' : 'Private'}
+                              </span>
+                            </div>
                             <p className="mt-1 text-sm text-gray-600 line-clamp-2">{post.content}</p>
+                            {post.images && post.images.length > 0 && (
+                              <div className="mt-2 grid grid-cols-3 gap-1">
+                                {post.images.slice(0, 3).map((image, index) => (
+                                  <img
+                                    key={index}
+                                    src={image}
+                                    alt={`Post image ${index + 1}`}
+                                    className="w-full h-16 object-cover rounded border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+                                    onClick={() => openLightbox(post.id, index)}
+                                  />
+                                ))}
+                                {post.images.length > 3 && (
+                                  <div className="w-full h-16 bg-gray-200 rounded border border-gray-200 flex items-center justify-center text-xs text-gray-600">
+                                    +{post.images.length - 3} more
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                           <div className="flex flex-col items-end gap-1 text-xs text-gray-500">
                             <div className="flex items-center gap-1">
@@ -229,6 +316,85 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {/* Lightbox Modal */}
+      {lightbox.isOpen && (() => {
+        const post = userPosts.find(p => p.id === lightbox.postId)
+        if (!post || !post.images) return null
+
+        return (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+            <div className="relative max-w-4xl max-h-full p-4">
+              {/* Close button */}
+              <button
+                onClick={closeLightbox}
+                className="absolute top-2 right-2 z-10 bg-black bg-opacity-50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              {/* Main image */}
+              <img
+                src={post.images[lightbox.currentIndex]}
+                alt={`Post image ${lightbox.currentIndex + 1}`}
+                className="max-w-full max-h-[80vh] object-contain"
+              />
+
+              {/* Navigation buttons */}
+              {post.images.length > 1 && (
+                <>
+                  <button
+                    onClick={() => navigateLightbox('prev')}
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-opacity-75 transition-colors"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => navigateLightbox('next')}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-opacity-75 transition-colors"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </>
+              )}
+
+              {/* Image counter */}
+              {post.images.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+                  {lightbox.currentIndex + 1} / {post.images.length}
+                </div>
+              )}
+
+              {/* Thumbnail strip for multiple images */}
+              {post.images.length > 1 && (
+                <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex space-x-2 max-w-full overflow-x-auto">
+                  {post.images.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setLightbox(prev => ({ ...prev, currentIndex: index }))}
+                      className={`flex-shrink-0 w-16 h-16 rounded border-2 ${
+                        index === lightbox.currentIndex ? 'border-white' : 'border-gray-500'
+                      } overflow-hidden`}
+                    >
+                      <img
+                        src={image}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

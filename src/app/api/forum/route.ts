@@ -7,13 +7,16 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId')
 
     const db = getDb()
-    let query = `SELECT id, user_id, user_name, title, content, created_at, COALESCE(upvotes, 0) as upvotes
+    let query = `SELECT id, user_id, user_name, title, content, created_at, COALESCE(upvotes, 0) as upvotes, visibility, COALESCE(images, '{}') as images
                  FROM posts`
     let params: string[] = []
 
     if (userId) {
       query += ` WHERE user_id = $1`
       params = [userId]
+    } else {
+      // For forum listing, only show public posts
+      query += ` WHERE visibility = 'public'`
     }
 
     query += ` ORDER BY created_at DESC`
@@ -26,6 +29,8 @@ export async function GET(request: NextRequest) {
       content: string
       created_at: string
       upvotes: number
+      visibility: 'public' | 'private'
+      images: string[]
     }>(query, params)
 
     return NextResponse.json(
@@ -37,6 +42,8 @@ export async function GET(request: NextRequest) {
         content: string
         created_at: string
         upvotes: number
+        visibility: 'public' | 'private'
+        images: string[]
       }) => ({
         id: row.id,
         userId: row.user_id,
@@ -45,6 +52,8 @@ export async function GET(request: NextRequest) {
         content: row.content,
         createdAt: row.created_at,
         upvotes: row.upvotes,
+        visibility: row.visibility,
+        images: row.images,
       }))
     )
   } catch (error) {
@@ -63,6 +72,8 @@ export async function POST(request: NextRequest) {
     const content = (body.content || '').toString().trim()
     const userId = (body.userId || '').toString().trim()
     const userName = (body.userName || 'Anonymous').toString().trim()
+    const visibility = (body.visibility === 'private') ? 'private' : 'public'
+    const images = Array.isArray(body.images) ? body.images.slice(0, 10) : [] // Max 10 images
 
     if (!userId || !userName) {
       return new NextResponse('User information is required', { status: 400 })
@@ -74,10 +85,10 @@ export async function POST(request: NextRequest) {
 
     const db = getDb()
     const result = await db.query(
-      `INSERT INTO posts (user_id, user_name, title, content, upvotes)
-       VALUES ($1, $2, $3, $4, 0)
-       RETURNING id, user_id, user_name, title, content, created_at, upvotes`,
-      [userId, userName, title, content]
+      `INSERT INTO posts (user_id, user_name, title, content, upvotes, visibility, images)
+       VALUES ($1, $2, $3, $4, 0, $5, $6)
+       RETURNING id, user_id, user_name, title, content, created_at, upvotes, visibility, images`,
+      [userId, userName, title, content, visibility, images]
     )
 
     const post = result.rows[0]
@@ -90,6 +101,8 @@ export async function POST(request: NextRequest) {
       content: post.content,
       createdAt: post.created_at,
       upvotes: post.upvotes,
+      visibility: post.visibility,
+      images: post.images,
     })
   } catch (error) {
     console.error('Database error:', error)

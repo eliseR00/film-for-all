@@ -6,4 +6,6 @@ export interface ForumPost {
   content: string
   createdAt: string
   upvotes: number
+  visibility: 'public' | 'private'
+  images: string[]
 }
