@@ -30,7 +30,7 @@ const Navbar = () => {
                     </li>
                     <li>
                         <Link href="/discovery" className="hover:text-gray-200 transition">
-                            Discover
+                            Discover Random Film
                         </Link>
                     </li>
                     <li>
